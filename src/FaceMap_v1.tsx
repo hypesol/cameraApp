@@ -129,28 +129,7 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                     return <Circle key={key} r={3} fill="yellow" x={x} y={y} />;
                 })}
 
-            {
-                contours &&
-                Object.entries(contours).map(([key, contour]) => {
-                    const points = contour.points;
-                    const isLipContour = lipContours.includes(key);
-
-                    if (isLipContour) {
-                        return (
-                            <React.Fragment key={key}>
-                                <Path
-                                    d={pointsToPath(points)}
-                                    fill={lipColor} // Transparent color for lips
-                                    stroke="transparent"
-                                />
-                            </React.Fragment>
-                        );
-                    }
-
-
-                })}
-
-            {/* {showContours &&
+            {showContours &&
                 contours &&
                 Object.entries(contours).map(([key, contour]) => {
                     const points = contour.points;
@@ -194,7 +173,7 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                             />
                         </React.Fragment>
                     );
-                })} */}
+                })}
         </Svg>
     );
 };
