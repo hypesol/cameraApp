@@ -134,18 +134,21 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                 Object.entries(contours).map(([key, contour]) => {
                     const points = contour.points;
                     const isLipContour = lipContours.includes(key);
-                    const strokeColor = isLipContour ? lipColor : 'white';
-                    const fillColor = isLipContour ? lipColor : 'transparent';
+
+                    if (isLipContour) {
+                        return (
+                            <React.Fragment key={key}>
+                                <Path
+                                    d={pointsToPath(points)}
+                                    fill={lipColor} // Transparent color for lips
+                                    stroke="transparent"
+                                />
+                            </React.Fragment>
+                        );
+                    }
 
                     return (
                         <React.Fragment key={key}>
-                            {isLipContour && (
-                                <Path
-                                    d={pointsToPath(points)}
-                                    fill={lipColor}
-                                    stroke="transparent"
-                                />
-                            )}
                             {points.map((point, pointId) => {
                                 const { x, y } = scaledPoint(point);
 
@@ -155,7 +158,7 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                                         x={x}
                                         y={y}
                                         r={2}
-                                        fill={isLipContour ? lipColor : 'skyblue'}
+                                        fill="skyblue"
                                         opacity={0.5}
                                     />
                                 );
@@ -165,7 +168,7 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                                 d={pointsToPath(points)}
                                 fill="transparent"
                                 strokeWidth={2}
-                                stroke={strokeColor}
+                                stroke="white"
                                 strokeOpacity={0.5}
                             />
                         </React.Fragment>

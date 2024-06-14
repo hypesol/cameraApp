@@ -10,12 +10,12 @@ const Menu = () => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => navigation.navigate('CameraScreen')}>
+            {/* <TouchableOpacity onPress={() => navigation.navigate('CameraScreen')}>
                 <Text>Camera</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('CameraKitScreen')}>
                 <Text>CameraKitScreen</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <TouchableOpacity onPress={() => navigation.navigate('FaceDetectionScreen')}>
                 <Text>FaceDetectionScreen</Text>
             </TouchableOpacity>
