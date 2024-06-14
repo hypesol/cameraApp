@@ -75,7 +75,7 @@ const FaceDetectionScreen = ({ onBack }) => {
     const [showFrame, setShowFrame] = useState(true);
     const [showLandmarks, setShowLandmarks] = useState(false);
     const [showContours, setShowContours] = useState(false);
-    const [lipColor, setLipColor] = useState('red'); // Default color for lips
+    const [lipColor, setLipColor] = useState('rgba(241,40,64,0.5)'); // Default color for lips
 
     const handleChoose = async (currentImage) => {
         setImage(currentImage);
@@ -109,7 +109,7 @@ const FaceDetectionScreen = ({ onBack }) => {
                         />
                     ))}
 
-                    <OptionSwitch
+                    {/* <OptionSwitch
                         label="Show Frame"
                         value={showFrame}
                         onChange={setShowFrame}
@@ -123,13 +123,13 @@ const FaceDetectionScreen = ({ onBack }) => {
                         label="Show Contours"
                         value={showContours}
                         onChange={setShowContours}
-                    />
+                    /> */}
 
                     <View style={styles.colorPicker}>
                         <Text>Select Lip Color:</Text>
-                        <TouchableOpacity onPress={() => setLipColor('rgba(255, 0, 0, 0.5)')} style={[styles.colorButton, { backgroundColor: 'red' }]} />
-                        <TouchableOpacity onPress={() => setLipColor('rgba(0, 0, 0, 0.5)')} style={[styles.colorButton, { backgroundColor: 'black' }]} />
-                        <TouchableOpacity onPress={() => setLipColor('rgba(0, 255, 0, 0.4)')} style={[styles.colorButton, { backgroundColor: 'green' }]} />
+                        <TouchableOpacity onPress={() => setLipColor('rgba(153,88,106, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(153,88,106)' }]} />
+                        <TouchableOpacity onPress={() => setLipColor('rgba(241,40,64, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(241,40,64)' }]} />
+                        <TouchableOpacity onPress={() => setLipColor('rgba(247,190,174, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(247,190,174)' }]} />
                     </View>
                 </View>
             )}

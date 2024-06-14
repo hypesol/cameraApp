@@ -1,150 +1,91 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Switch, TouchableOpacity, Image } from 'react-native';
-import { Camera } from 'react-native-camera-kit';
-import FaceDetection from '@react-native-ml-kit/face-detection';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image, Button, StatusBar, Switch, Text } from 'react-native';
+import { launchCamera, MediaTypeOptions } from 'react-native-image-picker';
+import FaceMap from './FaceMap';
 
-const FaceLipsColor = () => {
-    const [hasPermission, setHasPermission] = useState(false);
-    const [showLandmarks, setShowLandmarks] = useState(true);
-    const [showContours, setShowContours] = useState(true);
+const FaceLipsColor = ({ onBack }) => {
+    const [image, setImage] = useState(null);
     const [faces, setFaces] = useState([]);
-    const [capturedImageUri, setCapturedImageUri] = useState(null);
-    const cameraRef = useRef(null);
+    const [showFrame, setShowFrame] = useState(true);
+    const [showLandmarks, setShowLandmarks] = useState(false);
+    const [showContours, setShowContours] = useState(false);
+    const [lipColor, setLipColor] = useState('rgba(241,40,64,0.5)'); // Default color for lips
 
     useEffect(() => {
-        const requestPermissions = async () => {
-            const cameraPermission = await Camera.requestDeviceCameraAuthorization();
-            setHasPermission(cameraPermission);
-        };
-
-        requestPermissions();
+        startCamera();
     }, []);
 
-    const handleCaptureImage = async () => {
-        if (cameraRef.current) {
-            const image = await cameraRef.current.capture();
-            setCapturedImageUri(image.uri);
-            const detectedFaces = await handleFacesDetected(image.uri);
-            setFaces(detectedFaces);
-        }
+    const startCamera = () => {
+        launchCamera(
+            {
+                mediaType: 'photo', // Capture photo frames
+                cameraType: 'front', // Use front camera
+                includeBase64: false,
+                width: 300, // Adjust as needed
+                height: 400, // Adjust as needed
+            },
+            (response) => {
+                if (response.didCancel || !response.assets || response.assets.length === 0) {
+                    return;
+                }
+
+                const asset = response.assets[0];
+                const currentImage = {
+                    path: asset.uri,
+                    width: asset.width,
+                    height: asset.height,
+                };
+
+                setImage(currentImage);
+
+                detectFaces(currentImage);
+            },
+        );
     };
 
-    const handleFacesDetected = async (uri) => {
-        try {
-            const detectedFaces = await FaceDetection.detect(uri, {
-                landmarkMode: 'all',
-                contourMode: 'all',
-            });
-            return detectedFaces;
-        } catch (error) {
-            console.error(error);
-        }
-        return [];
-    };
-
-    const renderFaceFeatures = (faces) => {
-        if (!faces || faces.length === 0) return null;
-
-        return faces.map((face, index) => {
-            const { landmarks, contours } = face;
-            const mouthBottom = landmarks?.mouthBottom;
-
-            return (
-                <View key={index} style={{ position: 'absolute', zIndex: 1000 }}>
-                    {showLandmarks && landmarks && Object.keys(landmarks).map((key, idx) => (
-                        <View
-                            key={`landmark-${idx}`}
-                            style={{
-                                position: 'absolute',
-                                left: landmarks[key].x,
-                                top: landmarks[key].y,
-                                width: 5,
-                                height: 5,
-                                backgroundColor: 'blue',
-                            }}
-                        />
-                    ))}
-                    {showContours && contours && Object.keys(contours).map((key, idx) => (
-                        Array.isArray(contours[key]) && contours[key].map((point, pIdx) => (
-                            <View
-                                key={`contour-${key}-${pIdx}`}
-                                style={{
-                                    position: 'absolute',
-                                    left: point.x,
-                                    top: point.y,
-                                    width: 1,
-                                    height: 1,
-                                    backgroundColor: 'green',
-                                }}
-                            />
-                        ))
-                    ))}
-                    {mouthBottom && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                left: mouthBottom.x - 15,
-                                top: mouthBottom.y - 10,
-                                width: 30,
-                                height: 20,
-                                backgroundColor: 'rgba(255,0,0,0.5)', // Change to desired lip color
-                            }}
-                        />
-                    )}
-                </View>
-            );
+    const detectFaces = async (currentImage) => {
+        const result = await FaceDetection.detect(currentImage.path, {
+            landmarkMode: 'all',
+            contourMode: 'all',
         });
+
+        setFaces(result);
     };
 
-    // if (!hasPermission) {
-    //     return (
-    //         <View style={styles.container}>
-    //             <Text>Requesting Camera Permissions...</Text>
-    //         </View>
-    //     );
-    // }
+    const handleColorChange = (color) => {
+        setLipColor(color);
+    };
 
     return (
         <View style={styles.container}>
             <View style={styles.cameraContainer}>
-                {capturedImageUri ? (
-                    <Image source={{ uri: capturedImageUri }} style={styles.cameraPreview} resizeMode="contain" />
-                ) : (
-                    <Camera
-                        ref={cameraRef}
-                        style={styles.cameraPreview}
-                        cameraType={'front'}
-                        flashMode={'off'}
-                        resetFocusWhenMotionDetected
-                        zoom={0}
-                        maxZoom={10}
-                        torchMode="off"
+                {image ? (
+                    <FaceMap
+                        key={faces[0]?.trackingId || Math.random()}
+                        face={faces[0]}
+                        width={image.width}
+                        height={image.height}
+                        showFrame={showFrame}
+                        showContours={showContours}
+                        showLandmarks={showLandmarks}
+                        lipColor={lipColor} // Pass the lip color to FaceMap
                     />
+                ) : (
+                    <TouchableOpacity style={styles.cameraPreview} onPress={startCamera}>
+                        <Text style={styles.cameraText}>Tap to Start Camera</Text>
+                    </TouchableOpacity>
                 )}
             </View>
-            {capturedImageUri && renderFaceFeatures(faces)}
-            <TouchableOpacity style={styles.captureButton} onPress={handleCaptureImage}>
-                <Text style={styles.captureButtonText}>Capture</Text>
-            </TouchableOpacity>
-            <View style={styles.switchContainer}>
-                <Switch
-                    value={showLandmarks}
-                    onValueChange={setShowLandmarks}
-                    accessibilityLabel="Show Landmarks"
-                />
-                <Text style={styles.switchLabel}>Show Landmarks</Text>
-                <Switch
-                    value={showContours}
-                    onValueChange={setShowContours}
-                    accessibilityLabel="Show Contours"
-                />
-                <Text style={styles.switchLabel}>Show Contours</Text>
+
+            <View style={styles.colorPicker}>
+                <Text>Select Lip Color:</Text>
+                <TouchableOpacity onPress={() => handleColorChange('rgba(153,88,106, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(153,88,106)' }]} />
+                <TouchableOpacity onPress={() => handleColorChange('rgba(241,40,64, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(241,40,64)' }]} />
+                <TouchableOpacity onPress={() => handleColorChange('rgba(247,190,174, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(247,190,174)' }]} />
             </View>
         </View>
     );
 };
-
-export default FaceLipsColor;
 
 const styles = StyleSheet.create({
     container: {
@@ -155,31 +96,33 @@ const styles = StyleSheet.create({
     cameraContainer: {
         flex: 1,
         width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     cameraPreview: {
-        flex: 1,
-        width: '100%',
+        width: 300,
+        height: 400,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#ccc',
+        borderRadius: 10,
     },
-    captureButton: {
-        position: 'absolute',
-        bottom: 20,
-        left: '50%',
-        transform: [{ translateX: -50 }],
-        backgroundColor: 'blue',
-        padding: 10,
-        borderRadius: 5,
+    cameraText: {
+        fontSize: 20,
+        color: '#333',
     },
-    captureButtonText: {
-        color: 'white',
-        fontSize: 16,
-    },
-    switchContainer: {
+    colorPicker: {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 10,
     },
-    switchLabel: {
-        color: '#333',
-        marginLeft: 15,
+    colorButton: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginLeft: 10,
     },
 });
+
+export default FaceLipsColor;
