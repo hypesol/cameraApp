@@ -84,6 +84,7 @@ function scaleFrame(imageWidth, imageHeight, screenWidth) {
 }
 
 const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, lipColor }) => {
+    console.log("DM", width, height, face);
     const screen = useWindowDimensions();
     const scaledFrame = scaleFrame(width, height, screen.width);
     const scaledPoint = scalePoint(width, height, screen.width);
@@ -225,6 +226,7 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
+        // backgroundColor: 'green'
     },
 });
 

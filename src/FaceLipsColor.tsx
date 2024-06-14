@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, Image } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, Image, Dimensions } from 'react-native';
 import FaceMap from './FaceMap';
+import FaceMapCam from './FaceMapCam';
 import { Camera } from 'react-native-camera-kit';
 import FaceDetection from '@react-native-ml-kit/face-detection';
 
@@ -14,38 +15,8 @@ const FaceLipsColor = ({ onBack }) => {
 
     const cameraRef = useRef(null);
 
-    useEffect(() => {
-        // startCamera();
-    }, []);
     const PreviewImage = ({ source }) => {
         return <Image source={{ uri: source }} style={styles.image} />;
-    };
-    const startCamera = async () => {
-        try {
-            const isAuthorized = await Camera.checkDeviceCameraAuthorizationStatus();
-            if (!isAuthorized) {
-                const granted = await Camera.requestDeviceCameraAuthorization();
-                if (!granted) {
-                    throw new Error('Camera permission not granted');
-                }
-            }
-
-            await cameraRef.current.start({
-                cameraType: 'front',
-                flashMode: 'off',
-                zoom: 0,
-                maxZoom: 10,
-                torchMode: 'off',
-                resetFocusWhenMotionDetected: true,
-            });
-        } catch (error) {
-            console.error('Failed to start camera:', error);
-        }
-    };
-
-    const handleColorChange = (color) => {
-        console.log("COLOR");
-        setLipColor(color);
     };
 
     const takePicture = async () => {
@@ -54,13 +25,13 @@ const FaceLipsColor = ({ onBack }) => {
             const imageData = await cameraRef.current.capture();
             const { uri, width, height } = imageData;
             setImage({ path: uri, width, height });
-            await detectFaces(uri);
+            await detectFaces(uri, width, height);
         } catch (error) {
             console.error('Failed to take picture:', error);
         }
     };
 
-    const detectFaces = async (imagePath) => {
+    const detectFaces = async (imagePath, imageWidth, imageHeight) => {
         try {
             const result = await FaceDetection.detect(imagePath, {
                 landmarkMode: 'all',
@@ -70,7 +41,13 @@ const FaceLipsColor = ({ onBack }) => {
             if (result.length === 0) {
                 throw new Error('No faces detected');
             }
-            setFaces(result);
+            // Attach the image dimensions to each detected face
+            const facesWithDimensions = result.map(face => ({
+                ...face,
+                imageWidth,
+                imageHeight,
+            }));
+            setFaces(facesWithDimensions);
         } catch (error) {
             console.error('Face detection failed:', error);
         }
@@ -98,20 +75,11 @@ const FaceLipsColor = ({ onBack }) => {
                 </>
             )}
 
-
-            {/* <View style={styles.colorPicker}>
-                <Text>Select Lip Color:</Text>
-                <TouchableOpacity onPress={() => handleColorChange('rgba(153,88,106, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(153,88,106)' }]} />
-                <TouchableOpacity onPress={() => handleColorChange('rgba(241,40,64, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(241,40,64)' }]} />
-                <TouchableOpacity onPress={() => handleColorChange('rgba(247,190,174, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(247,190,174)' }]} />
-            </View> */}
-
             {image && (
                 <View style={styles.imageContainer}>
                     <PreviewImage source={image.path} />
-
                     {faces.map(face => (
-                        <FaceMap
+                        <FaceMapCam
                             key={face.trackingId || Math.random()}
                             face={face}
                             width={image.width}
@@ -119,26 +87,9 @@ const FaceLipsColor = ({ onBack }) => {
                             showFrame={showFrame}
                             showContours={showContours}
                             showLandmarks={showLandmarks}
-                            lipColor={lipColor} // Pass the lip color to FaceMap
+                            lipColor={lipColor}
                         />
                     ))}
-
-                    {/* <OptionSwitch
-                        label="Show Frame"
-                        value={showFrame}
-                        onChange={setShowFrame}
-                    />
-                    <OptionSwitch
-                        label="Show Landmarks"
-                        value={showLandmarks}
-                        onChange={setShowLandmarks}
-                    />
-                    <OptionSwitch
-                        label="Show Contours"
-                        value={showContours}
-                        onChange={setShowContours}
-                    /> */}
-
                     <View style={styles.colorPicker}>
                         <Text>Select Lip Color:</Text>
                         <TouchableOpacity onPress={() => setLipColor('rgba(153,88,106, 0.5)')} style={[styles.colorButton, { backgroundColor: 'rgb(153,88,106)' }]} />
@@ -147,18 +98,6 @@ const FaceLipsColor = ({ onBack }) => {
                     </View>
                 </View>
             )}
-            {/* {image && faces && faces.length > 0 && (
-                <FaceMap
-                    key={faces[0]?.trackingId || Math.random()}
-                    face={faces[0]}
-                    width={image.width}
-                    height={image.height}
-                    showFrame={showFrame}
-                    showContours={showContours}
-                    showLandmarks={showLandmarks}
-                    lipColor={lipColor}
-                />
-            )} */}
         </View>
     );
 };
@@ -174,16 +113,10 @@ const styles = StyleSheet.create({
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'red'
     },
     cameraPreview: {
-        width: 300,
-        height: 400,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#ccc',
-        borderRadius: 10,
+        width: '100%',
+        flex: 1,
     },
     captureButton: {
         margin: 20,

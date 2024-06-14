@@ -83,14 +83,16 @@ function scaleFrame(imageWidth, imageHeight, screenWidth) {
     };
 }
 
-const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, lipColor }) => {
+const FaceMapCam = ({ face, width, height, showLandmarks, showContours, showFrame, lipColor }) => {
+    // console.log("DM", width, height, face.frame);
     const screen = useWindowDimensions();
     const scaledFrame = scaleFrame(width, height, screen.width);
     const scaledPoint = scalePoint(width, height, screen.width);
 
     const { landmarks, contours } = face;
     const frame = scaledFrame(face.frame);
-
+    // const frame = face.frame;
+    console.log("Frame", screen.width, face.frame.width);
     function pointsToPath(points) {
         return points
             .map(scaledPoint)
@@ -107,7 +109,7 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
     ];
 
     return (
-        <Svg style={styles.container} width={width} height={height}>
+        <Svg style={styles.container} width={screen.width} height={screen.width}>
             {showFrame && (
                 <Rect
                     stroke="white"
@@ -129,11 +131,11 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                     return <Circle key={key} r={3} fill="yellow" x={x} y={y} />;
                 })}
 
-            {showContours &&
-                contours &&
+            {contours &&
                 Object.entries(contours).map(([key, contour]) => {
                     const points = contour.points;
                     const isLipContour = lipContours.includes(key);
+                    const strokeColor = isLipContour ? lipColor : 'white';
 
                     if (isLipContour) {
                         return (
@@ -143,36 +145,16 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                                     fill={lipColor} // Transparent color for lips
                                     stroke="transparent"
                                 />
+                                <Path
+                                    d={pointsToPath(points)}
+                                    fill="transparent"
+                                    strokeWidth={2}
+                                    stroke={strokeColor}
+                                    strokeOpacity={0.5}
+                                />
                             </React.Fragment>
                         );
                     }
-
-                    return (
-                        <React.Fragment key={key}>
-                            {points.map((point, pointId) => {
-                                const { x, y } = scaledPoint(point);
-
-                                return (
-                                    <Circle
-                                        key={`${pointId}-${x}-${y}`}
-                                        x={x}
-                                        y={y}
-                                        r={2}
-                                        fill="skyblue"
-                                        opacity={0.5}
-                                    />
-                                );
-                            })}
-
-                            <Path
-                                d={pointsToPath(points)}
-                                fill="transparent"
-                                strokeWidth={2}
-                                stroke="white"
-                                strokeOpacity={0.5}
-                            />
-                        </React.Fragment>
-                    );
                 })}
         </Svg>
     );
@@ -181,7 +163,8 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
+
     },
 });
 
-export default FaceMap;
+export default FaceMapCam;

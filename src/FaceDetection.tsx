@@ -90,8 +90,10 @@ const FaceDetectionScreen = ({ onBack }) => {
 
     return (
         <View style={styles.container}>
-            <ChooseImageButton onChoose={handleChoose} />
+            {!image && (
 
+                <ChooseImageButton onChoose={handleChoose} />
+            )}
             {image && (
                 <View style={styles.imageContainer}>
                     <PreviewImage source={image.path} />
