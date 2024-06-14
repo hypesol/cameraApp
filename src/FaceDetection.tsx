@@ -129,7 +129,7 @@ const FaceDetectionScreen = ({ onBack }) => {
                         <Text>Select Lip Color:</Text>
                         <TouchableOpacity onPress={() => setLipColor('rgba(255, 0, 0, 0.5)')} style={[styles.colorButton, { backgroundColor: 'red' }]} />
                         <TouchableOpacity onPress={() => setLipColor('rgba(0, 0, 0, 0.5)')} style={[styles.colorButton, { backgroundColor: 'black' }]} />
-                        <TouchableOpacity onPress={() => setLipColor('rgba(0, 255, 0, 0.5)')} style={[styles.colorButton, { backgroundColor: 'green' }]} />
+                        <TouchableOpacity onPress={() => setLipColor('rgba(0, 255, 0, 0.4)')} style={[styles.colorButton, { backgroundColor: 'green' }]} />
                     </View>
                 </View>
             )}

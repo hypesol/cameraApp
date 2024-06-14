@@ -134,6 +134,7 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                 Object.entries(contours).map(([key, contour]) => {
                     const points = contour.points;
                     const isLipContour = lipContours.includes(key);
+                    const strokeColor = isLipContour ? lipColor : 'white';
 
                     if (isLipContour) {
                         return (
@@ -142,6 +143,28 @@ const FaceMap = ({ face, width, height, showLandmarks, showContours, showFrame, 
                                     d={pointsToPath(points)}
                                     fill={lipColor} // Transparent color for lips
                                     stroke="transparent"
+                                />
+                                {/* {points.map((point, pointId) => {
+                                    const { x, y } = scaledPoint(point);
+
+                                    return (
+                                        <Circle
+                                            key={`${pointId}-${x}-${y}`}
+                                            x={x}
+                                            y={y}
+                                            r={2}
+                                            fill={isLipContour ? lipColor : 'skyblue'}
+                                            opacity={0.5}
+                                        />
+                                    );
+                                })} */}
+
+                                <Path
+                                    d={pointsToPath(points)}
+                                    fill="transparent"
+                                    strokeWidth={2}
+                                    stroke={strokeColor}
+                                    strokeOpacity={0.5}
                                 />
                             </React.Fragment>
                         );
