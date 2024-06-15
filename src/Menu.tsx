@@ -16,12 +16,12 @@ const Menu = () => {
             <TouchableOpacity onPress={() => navigation.navigate('CameraKitScreen')}>
                 <Text>CameraKitScreen</Text>
             </TouchableOpacity> */}
-            <TouchableOpacity onPress={() => navigation.navigate('FaceDetectionScreen')}>
-                <Text>FaceDetectionScreen</Text>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('FaceDetectionScreen')}>
+                <Text style={styles.btnText}>Gallery</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate('FaceLipsColor')}>
-                <Text>FaceLipsColor</Text>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('FaceLipsColor')}>
+                <Text style={styles.btnText}>Camera</Text>
             </TouchableOpacity>
 
         </View>
@@ -40,4 +40,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    button: {
+        backgroundColor: '#000',
+        width: '70%',
+        padding: 10,
+        marginBottom: 10
+    },
+    btnText: {
+        color: "#fff",
+        textAlign: 'center'
+    }
 })
